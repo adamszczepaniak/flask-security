@@ -61,7 +61,7 @@ def _ctx(endpoint):
     return _security._run_ctx_processor(endpoint)
 
 
-@anonymous_user_required
+# @anonymous_user_required
 def login():
     """View function for login view"""
 
