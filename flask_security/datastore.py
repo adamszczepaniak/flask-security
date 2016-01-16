@@ -63,13 +63,14 @@ class UserDatastore(object):
     :param role_model: A role model class definition
     """
 
-    def __init__(self, user_model, role_model):
+    def __init__(self, user_model, role_model, user_key_field='email'):
         self.user_model = user_model
         self.role_model = role_model
+        self.user_key_field = user_key_field
 
     def _prepare_role_modify_args(self, user, role):
         if isinstance(user, string_types):
-            user = self.find_user(email=user)
+            user = self.find_user(**{self.user_key_field: user})
         if isinstance(role, string_types):
             role = self.find_role(role)
         return user, role
@@ -179,9 +180,9 @@ class SQLAlchemyUserDatastore(SQLAlchemyDatastore, UserDatastore):
     """A SQLAlchemy datastore implementation for Flask-Security that assumes the
     use of the Flask-SQLAlchemy extension.
     """
-    def __init__(self, db, user_model, role_model):
+    def __init__(self, db, user_model, role_model, user_key_field='email'):
         SQLAlchemyDatastore.__init__(self, db)
-        UserDatastore.__init__(self, user_model, role_model)
+        UserDatastore.__init__(self, user_model, role_model, user_key_field)
 
     def get_user(self, identifier):
         if self._is_numeric(identifier):
@@ -210,9 +211,9 @@ class MongoEngineUserDatastore(MongoEngineDatastore, UserDatastore):
     """A MongoEngine datastore implementation for Flask-Security that assumes
     the use of the Flask-MongoEngine extension.
     """
-    def __init__(self, db, user_model, role_model):
+    def __init__(self, db, user_model, role_model, user_key_field='email'):
         MongoEngineDatastore.__init__(self, db)
-        UserDatastore.__init__(self, user_model, role_model)
+        UserDatastore.__init__(self, user_model, role_model, user_key_field)
 
     def get_user(self, identifier):
         from mongoengine import ValidationError

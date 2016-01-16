@@ -26,6 +26,7 @@ _datastore = LocalProxy(lambda: current_app.extensions['security'].datastore)
 
 _default_field_labels = {
     'email': 'Email Address',
+    'username': 'User name',
     'password': 'Password',
     'remember_me': 'Remember Me',
     'login': 'Login',
@@ -246,6 +247,51 @@ class LoginForm(Form, NextFormMixin):
             return False
         return True
 
+
+class UserNameLoginForm(Form, NextFormMixin):
+    """The default login form"""
+
+    username = StringField(get_form_field_label('username'))
+    password = PasswordField(get_form_field_label('password'))
+    remember = BooleanField(get_form_field_label('remember_me'))
+    submit = SubmitField(get_form_field_label('login'))
+
+    def __init__(self, *args, **kwargs):
+        super(UserNameLoginForm, self).__init__(*args, **kwargs)
+        if not self.next.data:
+            self.next.data = request.args.get('next', '')
+        self.remember.default = config_value('DEFAULT_REMEMBER_ME')
+
+    def validate(self):
+        if not super(UserNameLoginForm, self).validate():
+            return False
+
+        if self.username.data.strip() == '':
+            self.username.errors.append(get_message('USERNAME_NOT_PROVIDED')[0])
+            return False
+
+        if self.password.data.strip() == '':
+            self.password.errors.append(get_message('PASSWORD_NOT_PROVIDED')[0])
+            return False
+
+        self.user = _datastore.get_user(self.username.data)
+
+        if self.user is None:
+            self.username.errors.append(get_message('USER_DOES_NOT_EXIST')[0])
+            return False
+        if not self.user.password:
+            self.password.errors.append(get_message('PASSWORD_NOT_SET')[0])
+            return False
+        if not verify_and_update_password(self.password.data, self.user):
+            self.password.errors.append(get_message('INVALID_PASSWORD')[0])
+            return False
+        if requires_confirmation(self.user):
+            self.username.errors.append(get_message('CONFIRMATION_REQUIRED')[0])
+            return False
+        if not self.user.is_active:
+            self.username.errors.append(get_message('DISABLED_ACCOUNT')[0])
+            return False
+        return True
 
 class ConfirmRegisterForm(Form, RegisterFormMixin,
                           UniqueEmailFormMixin, NewPasswordFormMixin):

@@ -24,7 +24,7 @@ from .utils import config_value as cv, get_config, md5, url_for_security, string
 from .views import create_blueprint
 from .forms import LoginForm, ConfirmRegisterForm, RegisterForm, \
     ForgotPasswordForm, ChangePasswordForm, ResetPasswordForm, \
-    SendConfirmationForm, PasswordlessLoginForm
+    SendConfirmationForm, PasswordlessLoginForm, UserNameLoginForm
 
 # Convenient references
 _security = LocalProxy(lambda: current_app.extensions['security'])
@@ -148,6 +148,8 @@ _default_messages = {
         'Account is disabled.', 'error'),
     'EMAIL_NOT_PROVIDED': (
         'Email not provided', 'error'),
+    'USERNAME_NOT_PROVIDED': (
+        'User name not provided', 'error'),
     'INVALID_EMAIL_ADDRESS': (
         'Invalid email address', 'error'),
     'PASSWORD_NOT_PROVIDED': (
@@ -176,7 +178,7 @@ _default_messages = {
 }
 
 _default_forms = {
-    'login_form': LoginForm,
+    'login_form': UserNameLoginForm,
     'confirm_register_form': ConfirmRegisterForm,
     'register_form': RegisterForm,
     'forgot_password_form': ForgotPasswordForm,

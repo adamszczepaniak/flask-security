@@ -68,7 +68,8 @@ def _check_token():
 
 def _check_http_auth():
     auth = request.authorization or BasicAuth(username=None, password=None)
-    user = _security.datastore.find_user(email=auth.username)
+    user_key_field = _security.datastore.user_key_field
+    user = _security.datastore.find_user(**{user_key_field: auth.username})
 
     if user and utils.verify_and_update_password(auth.password, user):
         _security.datastore.commit()
